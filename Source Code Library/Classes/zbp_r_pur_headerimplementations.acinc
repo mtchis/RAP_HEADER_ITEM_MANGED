@@ -1,0 +1,213 @@
+CLASS lhc_zr_pur_item DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS deliverydate FOR VALIDATE ON SAVE
+      IMPORTING keys FOR zr_pur_item~deliverydate.
+    METHODS recalulateitem FOR MODIFY
+      IMPORTING keys FOR ACTION zr_pur_item~recalulateitem.
+
+    METHODS calulateprice FOR DETERMINE ON SAVE
+      IMPORTING keys FOR zr_pur_item~calulateprice.
+
+    METHODS calulatetotalpriceforitems FOR DETERMINE ON SAVE
+      IMPORTING keys FOR zr_pur_header~calulatetotalpriceforitems.
+
+
+ENDCLASS.
+
+CLASS lhc_zr_pur_item IMPLEMENTATION.
+
+  METHOD deliverydate.
+    READ ENTITY  IN LOCAL MODE zr_pur_item
+
+     FIELDS ( Eeind )
+     WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_local_mod).
+
+    DATA lt_cust  TYPE SORTED TABLE OF zpur_item_t  WITH UNIQUE KEY ebeln.
+    SELECT  FROM zpur_item_t
+        FIELDS eeind
+        FOR ALL ENTRIES IN @lt_local_mod
+        WHERE ebeln =  @lt_local_mod-Ebeln
+        INTO TABLE @DATA(lt_cust_db).
+    LOOP  AT lt_local_mod  ASSIGNING FIELD-SYMBOL(<ls_items>).
+      IF <ls_items>-Eeind < sy-datum.
+
+        APPEND VALUE #( %key = <ls_items>-%tky )
+             TO failed-zr_pur_item.
+
+        APPEND VALUE #( %key = <ls_items>-%tky
+          %msg = new_message(
+                   id       = 'ZPP'
+                   number   = '001'
+                   severity = if_abap_behv_message=>severity-error
+
+                 )
+          )
+
+        TO reported-zr_pur_item.
+      ENDIF.
+
+    ENDLOOP.
+**********************************************************************
+
+  ENDMETHOD.
+
+  METHOD recalulateitem.
+
+
+  ENDMETHOD.
+
+  METHOD calulateprice.
+
+    DATA lv_sum_netpr TYPE netpr.
+    DATA lv_curr_waers  TYPE waers.
+
+*    DATA lv_target_waers TYPE waers VALUE 'USD'.  " Target currency
+*    DATA lv_converted_netpr TYPE netpr.
+
+
+DATA :lv_target_curr TYPE waers VALUE 'INR',
+
+lv_conv_netpr TYPE netpr,
+lv_exch_rate TYPE f.
+      " Example target currency
+    READ ENTITIES OF zr_pur_header IN LOCAL MODE
+          ENTITY zr_pur_header
+          BY \_items
+          ALL FIELDS
+          WITH VALUE #( ( %key-Ebeln = keys[ 1 ]-%key-Ebeln  )  )
+          RESULT DATA(lt_items_all).
+
+    lv_curr_waers = VALUE #( lt_items_all[ 1 ]-Waers OPTIONAL  ).
+
+    LOOP AT lt_items_all INTO DATA(ls_items_all).
+ lv_sum_netpr = lv_sum_netpr + ls_items_all-Netpr.
+
+    ENDLOOP.
+
+
+    DATA(key) = keys[ 1 ].
+
+    READ ENTITY zr_pur_header
+         FIELDS ( Netwr )
+         WITH VALUE #(  ( %key-Ebeln = key-Ebeln  )  )
+         RESULT DATA(lt_netwr).
+
+    DATA(lv_netwr) = lt_netwr[ 1 ]-Netwr.
+
+
+    IF lv_netwr NE lv_sum_netpr.
+
+
+
+      MODIFY ENTITIES OF zr_pur_header IN LOCAL MODE
+             ENTITY zr_pur_header
+             UPDATE FIELDS ( Netwr waers )
+             WITH VALUE #( ( %key-Ebeln  = key-%key-Ebeln netwr = lv_sum_netpr  Waers  = lv_curr_waers )  ).
+
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD calulatetotalpriceforitems.
+
+    DATA:lv_sum_netpr  TYPE netpr.
+    DATA : lv_waers TYPE waers.
+
+DATA  :lv_target_curr TYPE waers VALUE 'INR', " Example target currency
+      lv_conv_netpr TYPE netpr,
+      lv_exch_rate TYPE f.
+
+    READ ENTITIES OF zr_pur_header IN LOCAL MODE
+         ENTITY zr_pur_header
+         BY \_items
+         ALL FIELDS
+         WITH VALUE #( ( %key-Ebeln = keys[ 1 ]-%key-Ebeln  )  )
+         RESULT DATA(lt_items_all).
+
+
+LV_WAERS = VALUE #( lt_items_all[ 1 ]-Waers OPTIONAL  ).
+
+    LOOP AT lt_items_all INTO DATA(ls_items_all).
+
+* lv_sum_netpr = lv_sum_netpr + ls_items_all-Netpr.
+
+
+  CALL FUNCTION 'CONVERT_TO_LOCAL_CURRENCY'
+    EXPORTING
+      date             = sy-datum
+      foreign_amount   = ls_items_all-netpr
+      foreign_currency = ls_items_all-waers
+      local_currency   = lv_target_curr
+    IMPORTING
+      local_amount     = lv_conv_netpr
+      exchange_rate    = lv_exch_rate
+    EXCEPTIONS
+      no_rate_found    = 1
+      OTHERS           = 2.
+  IF sy-subrc = 0.
+
+ lv_sum_netpr = lv_sum_netpr + lv_conv_netpr. " Use converted amount
+
+  ELSE.
+     " Handle conversion error, e.g., log or skip
+  ENDIF.
+
+
+    ENDLOOP.
+
+    DATA(key) = keys[ 1 ].
+
+
+    READ ENTITY zr_pur_header
+         FIELDS ( Netwr )
+         WITH VALUE #(  ( %key-Ebeln = key-Ebeln  )  )
+         RESULT DATA(lt_netwr).
+
+    DATA(lv_netwr) = lt_netwr[ 1 ]-Netwr.
+
+    IF lv_netwr NE lv_sum_netpr.
+
+      MODIFY ENTITIES OF zr_pur_header IN LOCAL MODE
+             ENTITY zr_pur_header
+             UPDATE FIELDS ( Netwr waers )
+             WITH VALUE #( ( %key-Ebeln  = key-%key-Ebeln netwr = lv_sum_netpr  Waers  = lv_target_curr  )  ).
+
+
+
+    ENDIF.
+
+
+**********************************************************************
+
+
+  ENDMETHOD.
+
+
+ENDCLASS.
+
+CLASS lhc_ZR_PUR_HEADER DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR zr_pur_header RESULT result.
+    METHODS recalulateheader FOR MODIFY
+      IMPORTING keys FOR ACTION zr_pur_header~recalulateheader.
+
+**********************************************************************
+ENDCLASS.
+
+CLASS lhc_ZR_PUR_HEADER IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+  METHOD recalulateheader.
+
+
+  ENDMETHOD.
+
+
+
+ENDCLASS.
