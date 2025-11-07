@@ -1,0 +1,57 @@
+@Metadata.layer:#CORE
+@UI.headerInfo: {
+    typeName: 'Purchace Order ITEM Details',
+    typeNamePlural: 'Purchace Order ITEM Details',
+    
+    title: { type: #STANDARD, value: 'Ebeln'
+    
+
+}
+    }
+annotate entity ZC_PUR_ITEM with
+{
+
+
+  @UI.facet: [{ id :'items',
+  purpose: #STANDARD,
+  label: 'items',
+  type : #IDENTIFICATION_REFERENCE
+   }]
+  @UI.hidden: true
+ @UI.identification: [{ position: 10, label: 'Purchasing Document Number' }]
+  @UI.lineItem: [{ position: 10 }]
+  Ebeln;
+  @UI.identification: [{ position: 20,label: 'Item Number Purchasing Document'   }]
+  Ebelp;
+  @UI.identification: [{ position: 30 }]
+  @UI.lineItem: [{ position: 30 }]
+  Txz01;
+  @UI.identification: [{ position: 120  }]
+  @UI.lineItem: [{ position: 120 }]
+  Matnr;
+  @UI.identification: [{ position: 50 }]
+  @UI.lineItem: [{ position: 50,label: 'Company Code ' }]
+  Bukrs;
+  @UI.lineItem: [{ position: 100 }]
+  Meins;
+  @UI.identification: [{ position: 70 }]
+  @UI.lineItem: [{ position: 70 }]
+  Menge;
+  @UI.identification: [{ position: 80 }]
+  @UI.lineItem: [{ position: 80 }]
+  Peinh;
+  @UI.identification: [{ position: 110 }]
+  @UI.lineItem: [{ position: 110 }]
+  Waers;
+  @UI.identification: [{ position: 60 }]
+  @UI.lineItem: [{ position: 60 }]
+  Netpr;
+  @UI.identification: [{ position: 30 }]
+  @UI.lineItem: [{ position: 30,label: 'Delivery Date' }]
+  Eeind;
+   @UI.lineItem: [{ position: 40,label: 'Plant' }]
+  @UI.identification: [{ position: 40 }]
+  Werks;
+  
+  
+}

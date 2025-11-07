@@ -1,0 +1,64 @@
+@Metadata.layer:#CORE
+
+@UI.headerInfo: {
+    typeName: 'Purchace Order header details',
+    typeNamePlural: 'Purchace Order header details', 
+    
+     title: { type: #STANDARD, value: 'Ebeln'
+       
+    }}
+ 
+annotate entity ZC_PUR_HEADER with
+{
+
+  @UI.facet: [{ id :'HEADER',
+  purpose: #STANDARD,
+  position: 10,
+  label: 'HEADER' ,
+  type : #IDENTIFICATION_REFERENCE
+  
+  },{
+
+  id: 'items',
+  purpose: #STANDARD,
+  position: 20,
+  label: 'ITEMS',
+  type : #LINEITEM_REFERENCE,
+  targetElement: '_ITEMS'
+  
+  
+  }
+  ]
+  @UI.lineItem: [{ position: 10 }]
+  @UI.selectionField: [{ position: 10 }]
+  @UI.identification: [{ position: 10  }]
+   Ebeln;
+  @UI.lineItem: [{ position: 20, label: 'Company Code' }]
+  @UI.selectionField: [{ position: 20 }]
+  @UI.identification: [{ position: 20  }]
+  Bukrs;
+  @UI.lineItem: [{ position: 30,label: 'Plant' }]
+  @UI.identification: [{ position: 30  }]
+
+  Werks;
+  @UI.lineItem: [{ position: 40,label: 'Account Number of Supplier' }]
+  @UI.identification: [{ position: 40  }]
+  Lifnr;
+
+  @UI.lineItem: [{ position: 50 }]
+  @UI.identification: [{ position: 50  }]
+
+  Zterm;
+  
+  @UI.lineItem: [{ position: 60,label: 'Purchasing Organization' }]
+  @UI.identification: [{ position: 60  }]
+  Ekorg;
+  @UI.lineItem: [{ position: 70,label: 'Total Price' }]
+  @UI.identification: [{ position: 70  }]
+
+  Netwr;
+   @UI.lineItem: [{ position: 80,label: 'Created Date' }]
+  @UI.identification: [{ position: 80  }]
+  Createdat;
+  
+}

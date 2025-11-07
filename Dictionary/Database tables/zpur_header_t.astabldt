@@ -1,0 +1,24 @@
+@EndUserText.label : 'Purchasing Document Header Database Table'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #ALLOWED
+define table zpur_header_t {
+
+  key client       : abap.clnt not null;
+  key ebeln        : ebeln not null;
+  bukrs            : bukrs;
+  werks            : werks_d;
+  lifnr            : lifnr;
+  zterm            : dzterm;
+  waers            : waers;
+  ekorg            : ekorg;
+  @Semantics.amount.currencyCode : 'zpur_header_t.waers'
+  netwr            : netwr;
+  createdby        : abp_creation_user;
+  createdat        : tzntstmpl;
+  lastchangedby    : abp_lastchange_user;
+  lastchangedat    : abp_lastchange_tstmpl;
+  locallastchanged : abp_locinst_lastchange_tstmpl;
+
+}

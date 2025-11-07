@@ -1,0 +1,55 @@
+managed implementation in class zbp_r_pur_header unique;
+strict ( 2 );
+
+define behavior for ZR_PUR_HEADER //alias header
+persistent table zpur_header_t
+lock master
+authorization master ( instance )
+//etag master
+{
+
+  field ( readonly )Netwr, Waers;
+  create;
+  update;
+  delete;
+  side effects
+   {field bukrs affects field _ITEMS.Bukrs;
+    field Werks affects field _ITEMS.Werks; }
+
+  association _ITEMS { create; }
+  determination calulatetotalpriceforitems on save { create; update; }
+//  side effects
+//  { field Netwr affects field _ITEMS.Netpr;
+//    field Waers affects field _ITEMS.Waers;
+//
+//  }
+  // side effects { field Netwr affects field _ITEMS.Netpr;}
+  // determination calulateprice on modify  { create; field Netwr,Waers;}
+  internal action recalulateheader;
+}
+
+define behavior for ZR_PUR_ITEM //alias item
+
+persistent table zpur_item_t
+lock dependent by _HEADER
+authorization dependent by _HEADER
+//etag master <field_name>
+{
+  update;
+  delete;
+  field ( readonly ) Ebeln,Bukrs,Werks;
+
+  association _HEADER;
+
+side effects
+  { field Netpr affects field _HEADER.Netwr;
+    field Waers affects field _HEADER.Waers;
+    field bukrs affects field _HEADER.Bukrs;
+    field Werks affects field _HEADER.Werks;
+    }
+
+
+  validation deliverydate on save { create; field Eeind; }
+  determination calulateprice on save { create; update;  }
+  internal action recalulateitem;
+}

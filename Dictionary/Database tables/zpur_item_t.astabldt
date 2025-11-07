@@ -1,0 +1,29 @@
+@EndUserText.label : 'Purchasing Document Item Database Table'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zpur_item_t {
+
+  key client       : abap.clnt not null;
+  key ebeln        : ebeln not null;
+  key ebelp        : ebelp not null;
+  txz01            : txz01;
+  matnr            : matnr;
+  bukrs            : bukrs;
+  werks            : werks_d;
+  meins            : meins;
+  @Semantics.quantity.unitOfMeasure : 'zpur_item_t.meins'
+  menge            : menge_d;
+  peinh            : peinh;
+  waers            : waers;
+  @Semantics.amount.currencyCode : 'zpur_item_t.waers'
+  netpr            : bprei;
+  eeind            : eindt;
+  createdby        : abp_creation_user;
+  createdat        : tzntstmpl;
+  lastchangedby    : abp_lastchange_user;
+  lastchangedat    : abp_lastchange_tstmpl;
+  locallastchanged : abp_locinst_lastchange_tstmpl;
+
+}

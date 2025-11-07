@@ -1,0 +1,5 @@
+@EndUserText.label: 'test'
+define service ZUI_TAF_TEST {
+  expose ZC_PUR_HEADER as header;
+  expose ZC_PUR_ITEM   as items;
+}
